@@ -1,0 +1,2 @@
+Moxy Monitor FW 2.1.7 (demo)
+SN 00000 HW rev C

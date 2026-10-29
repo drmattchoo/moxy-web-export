@@ -1,0 +1,15 @@
+{
+  "name": "moxy-web-export",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Download the on-board log from a USB Moxy sensor in Chrome or Edge and save it as CSV files.",
+  "scripts": {
+    "sync": "node tools/sync.mjs",
+    "parity": "python3 tests/parity.py",
+    "test": "python3 tests/parity.py && node --test tests/parity.test.mjs tests/e2e.test.mjs",
+    "test:unit": "python3 tests/parity.py && node --test tests/parity.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

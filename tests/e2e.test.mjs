@@ -170,7 +170,7 @@ test('full demo flow writes files identical to the parity outputs', async () => 
     assert.ok(fs.readFileSync(path.join(out, `raw_gd_${stamp}.txt`)).equals(fs.readFileSync(path.join(here, 'fixtures', 'ringbuffer.txt'))),
       'raw file is the exact bytes received');
     const info = fs.readFileSync(path.join(out, `device_info_${stamp}.txt`), 'utf8');
-    assert.match(info, /^firmware: Moxy Monitor FW 2\.1\.7 \(demo\)\nSN 00000 HW rev C\ndevice_clock: 10-29,11:56:5\d\nbattery: 3\.94 V\nupdate_mode: 1\nport: USB vendor 0x0000 product 0x0000\nscript: moxy-web v1\.0\ndownloaded_at: 2026-10-29T12:00:\d\d\n$/);
+    assert.match(info, /^firmware: Moxy Monitor FW 2\.1\.7 \(demo\)\nSN 00000 HW rev C\ndevice_clock: 10-29,11:56:5\d\nbattery: 3\.94 V\nupdate_mode: 1\nport: USB vendor 0x0000 product 0x0000\nscript: moxy-web v1\.0\ndownloaded_at: 2026-10-29T12:00:\d\d(\.\d{6})?\n$/);
 
     // Erase: needs the typed word.
     await page.click('#erase-panel > summary');

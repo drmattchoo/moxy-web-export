@@ -91,6 +91,26 @@ def rollover():
     write("rollover.txt", lines)
 
 
+def edgecases():
+    """Field trimming, separators and bytes exactly as moxy_dump.py sees them."""
+    lines = session(datetime(2026, 10, 20, 10, 0, 0), 40)
+    lines[1] = '10-20,10:0:2," 48",50,12.00,0'          # space inside quotes kept
+    lines[2] = '10-20,10:0:4,48 ,"50" ,12.00,0'          # whitespace, then quotes
+    lines[3] = '10-20,10:0:6,a"b,50,12.00,0,""'          # inner quote, empty quoted
+    lines[4] = '10-20,10:0:8,48,50,12.00,0,caf\xe9'      # non-ASCII byte
+    lines[5] = '10-20,10:0:10,48,50,12.00,0\t'           # trailing tab
+    lines[6] = '\x1f10-20,10:0:12,48,50,12.00,0'         # leading unit separator
+    lines[7] = '10-20,10:0:14,,,,'                       # empty fields
+    lines[8] = '10-20,10:0:16,48,50,12.00,0\x0c10-20,10:0:18,47,50,12.00,0'  # form feed
+    lines[9] = '10-20,10:0:20,48,50,12.00,0\x1c10-20,10:0:22,47,50,12.00,0'  # file separator
+    lines[10] = '10-20,10:0:24,48,50,12.00,0\r10-20,10:0:26,47,50,12.00,0'   # bare CR
+    lines[11] = '\t ,, , ,,'                              # tab-led delimiter
+    OUT.mkdir(parents=True, exist_ok=True)
+    data = ("gd\r\n" + "".join(l + "\r\n" for l in lines) + "\r\n>").encode("latin-1")
+    (OUT / "edgecases.txt").write_bytes(data)
+    print(f"wrote {OUT / 'edgecases.txt'}")
+
+
 def nosessions():
     """Only a short session and junk: zero complete recordings."""
     lines = ["Moxy"] + session(datetime(2026, 10, 28, 8, 0, 0), 10) + [",,,,,"]
@@ -101,3 +121,4 @@ if __name__ == "__main__":
     ringbuffer()
     rollover()
     nosessions()
+    edgecases()

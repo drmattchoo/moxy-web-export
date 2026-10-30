@@ -64,7 +64,7 @@ Only `index.html` is needed at runtime. Everything else is source, tests and doc
 
 ## Running the tests
 
-Requirements: Python 3, Node 18 or later, and Playwright with Chromium (`npm install && npx playwright install chromium`). The reference script **`moxy_dump.py` must be in the repository root**.
+Requirements: Python 3, Node 18 or later, and Playwright with Chromium (`npm install && npx playwright install chromium`). The reference script `moxy_dump.py` v1.0 is in the repository root; pyserial is not needed for the tests.
 
 ```
 npm test
@@ -72,11 +72,21 @@ npm test
 
 This runs:
 
-1. `python3 tests/parity.py`: imports `parse_line` and `split_sessions` from `moxy_dump.py` and writes the expected session CSVs for each fixture to `tests/expected/` (not committed).
+1. `python3 tests/parity.py`: imports `parse_line` and `split_sessions` from `moxy_dump.py`, follows its `main()` (ASCII decode with replacement, `splitlines`, minimum-rows filter, same CSV f-strings) and writes the expected session CSVs for each fixture to `tests/expected/` (not committed).
 2. `tests/parity.test.mjs`: runs `moxy-core.js` on the same raw dumps with a fixed "today" (2026-10-29) and compares every file **byte for byte**. Also checks the copy of the core inside `index.html`, plus unit tests for the helpers.
 3. `tests/e2e.test.mjs`: runs the whole flow in demo mode in headless Chromium with a stubbed folder picker writing to a temporary directory, and checks the written files match the parity outputs and the raw fixture exactly. Also checks the error messages, the erase guard, refusal of an existing folder, the unsupported-browser message, and that there is no horizontal scrolling at 1280 and 400 px in light and dark.
 
-The fixtures cover: out-of-order ring-buffer rows, `,,,,,` and ` ,,,,,` delimiter lines, non-zero-padded times, 5-, 7- and 8-field lines, quoted fields, mm-dd later than today (year rollover), a session across New Year, two sessions separated by more than 30 minutes, gaps of exactly 30 minutes inside a session, a session below the minimum rows, invalid dates and garbage lines.
+The fixtures cover: out-of-order ring-buffer rows, `,,,,,` and ` ,,,,,` delimiter lines, non-zero-padded times, 5-, 7- and 8-field lines, quoted fields, mm-dd later than today (year rollover), a session across New Year, two sessions separated by more than 30 minutes, gaps of exactly 30 minutes inside a session, a session below the minimum rows, invalid dates, garbage lines, and field-level edge cases (spaces inside quotes, inner quotes, non-ASCII bytes, tabs, form-feed and other separators that Python's `splitlines` honours).
+
+## Differences from moxy_dump.py v1.0
+
+The session CSV rows are identical. Deliberate differences:
+
+- **First comment line** names `moxy-web v1.0` instead of `moxy_dump.py v1.0`.
+- **Firmware line endings.** The script keeps the sensor's `\r\n` inside the firmware text, so its CSV comment line can contain a stray carriage return (some programs read that as a line break). The web app turns the line endings into `\n` first, so the comment line is clean, and `device_info` uses `\n` throughout.
+- **29 February.** If the year of recording is a leap year and a 29 February row would roll back to a non-leap year, the script stops with an error. The web app skips that row.
+- **`port:`** in `device_info` is the USB vendor/product id (browsers do not reveal the port name).
+- **Erase** also checks the sensor's `ver` reply matches the sensor just downloaded, and needs a complete download with at least one session.
 
 ## Sensor protocol
 

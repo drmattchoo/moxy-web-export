@@ -11,4 +11,4 @@ First release.
 - Guarded erase: available only after this page saved a complete download with at least one session, needs `erase` typed, and checks the firmware reply matches the downloaded sensor.
 - Advanced settings for session gap and minimum rows; timestamped console log that can be saved.
 - Demo mode (`?demo=1`) with a simulated sensor.
-- Tests: parser parity against `moxy_dump.py`, and a Playwright run of the whole demo flow.
+- Tests: byte-for-byte parser parity against `moxy_dump.py` v1.0 (included), and a Playwright run of the whole demo flow.

@@ -21,6 +21,7 @@ const CASES = [
   ['ringbuffer', 'ringbuffer.txt', 30, 30],
   ['ringbuffer_gap10_min5', 'ringbuffer.txt', 10, 5],
   ['rollover', 'rollover.txt', 30, 30],
+  ['edgecases', 'edgecases.txt', 30, 30],
   ['nosessions', 'nosessions.txt', 30, 30],
 ];
 
@@ -80,7 +81,8 @@ test('folder name, codes and stamps', () => {
 });
 
 test('console helpers', () => {
-  assert.equal(core.cleanResponse('ver\r\nMoxy 2.1\r\nSN 1\r\n> ', 'ver'), 'Moxy 2.1\nSN 1');
+  assert.equal(core.cleanResponse('ver\r\nMoxy 2.1\r\nSN 1\r\n>', 'ver'), 'Moxy 2.1\nSN 1');
+  assert.equal(core.cleanResponse('um\r\n1\r\n>', 'um'), '1');
   assert.equal(core.cleanResponse('\r\n>', ''), '');
   assert.ok(core.endsWithPrompt('abc\r\n>  \r\n'));
   assert.ok(!core.endsWithPrompt('a > b'));

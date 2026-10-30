@@ -20,7 +20,11 @@
     "# year assumed from --year / today's date; device log stores mm-dd only";
   const CSV_HEADER = 'date,time,smo2_live,smo2_avg,thb,lap,extra';
   const LINE_RE = /^\s*(\d{1,2})-(\d{1,2}),(\d{1,2}):(\d{1,2}):(\d{1,2}),(.*)$/;
-  const DELIMITER_RE = /^[,\s]*$/;
+  const DELIMITER_RE = /^[, ]*$/;
+  // Python's str.strip() and str.splitlines() on ASCII text.
+  const PY_WS = '\\t\\n\\v\\f\\r\\x1c-\\x1f ';
+  const PY_STRIP_RE = new RegExp(`^[${PY_WS}]+|[${PY_WS}]+$`, 'g');
+  const PY_LINES_RE = /\r\n|[\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029]/;
   const FIELD_COUNT = 5;
 
   const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -41,8 +45,13 @@
     return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
   }
 
+  function pyStrip(s) {
+    return s.replace(PY_STRIP_RE, '');
+  }
+
+  // f.strip().strip('"'): whitespace first, then quotes only.
   function trimField(s) {
-    return s.replace(/^[\s"]+|[\s"]+$/g, '');
+    return pyStrip(s).replace(/^"+|"+$/g, '');
   }
 
   /*
@@ -53,8 +62,9 @@
    * where t is a sortable number (milliseconds, naive local time as UTC).
    */
   function parseLine(line, year, today) {
-    if (DELIMITER_RE.test(line)) return null;
-    const m = LINE_RE.exec(line);
+    const s = pyStrip(line);
+    if (DELIMITER_RE.test(s)) return null;
+    const m = LINE_RE.exec(s);
     if (!m) return null;
     const month = +m[1], day = +m[2];
     const hh = +m[3], mm = +m[4], ss = +m[5];
@@ -64,6 +74,8 @@
     if (!isValidDate(y, month, day)) return null;
     if (compareDates({ year: y, month, day }, today) > 0) {
       y -= 1;
+      // moxy_dump.py raises here (29 February rolled back to a non-leap
+      // year) and stops; skipping the row is the only sensible equivalent.
       if (!isValidDate(y, month, day)) return null;
     }
 
@@ -79,7 +91,7 @@
   }
 
   function splitLines(text) {
-    return text.split(/\r\n|\r|\n/);
+    return text.split(PY_LINES_RE);
   }
 
   // All valid rows of a dump, sorted by timestamp (stable for ties).
@@ -110,17 +122,18 @@
     return sessions.filter((s) => s.length >= minRows);
   }
 
+  // Like bytes.decode("ascii", errors="replace"): one U+FFFD per byte >= 0x80.
   function decodeBytes(bytes) {
-    return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-  }
-
-  // Quote like Python's csv.writer (QUOTE_MINIMAL).
-  function csvField(s) {
-    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    let out = '';
+    for (let i = 0; i < bytes.length; i += 0x2000) {
+      const part = bytes.subarray(i, i + 0x2000);
+      out += String.fromCharCode.apply(null, Array.from(part, (b) => (b < 0x80 ? b : 0xfffd)));
+    }
+    return out;
   }
 
   function firmwareLine(firmware) {
-    return String(firmware || '').trim().replace(/\r\n|\r|\n/g, ' | ');
+    return String(firmware || '').replace(/\n/g, ' | ');
   }
 
   function sessionCsv(session, firmware) {
@@ -128,7 +141,7 @@
     out += YEAR_COMMENT + '\n';
     out += CSV_HEADER + '\n';
     for (const r of session) {
-      out += [r.date, r.time, ...r.fields].map(csvField).join(',') + '\n';
+      out += [r.date, r.time, ...r.fields].join(',') + '\n';
     }
     return out;
   }
@@ -181,6 +194,12 @@
       `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
+  // datetime.now().isoformat(): fraction omitted when it is exactly zero.
+  function localIsoPrecise(d) {
+    const ms = d.getMilliseconds();
+    return localIso(d) + (ms ? '.' + pad(ms, 3) + '000' : '');
+  }
+
   function hex4(n) {
     return n == null ? 'unknown' : '0x' + n.toString(16).padStart(4, '0');
   }
@@ -215,14 +234,14 @@
     return tail.includes('\r\n') && endsWithPrompt(tail);
   }
 
-  // Remove the echoed command and the trailing prompt from a reply.
+  /* Remove the echoed command and the trailing prompt from a reply, as
+     moxy_dump.py does: txt.replace(cmd, "", 1).rstrip(">").strip().
+     Line endings are then normalised to \n (the Python script keeps the
+     device's \r\n, which leaves a stray CR in the CSV comment line). */
   function cleanResponse(text, command) {
-    let s = text.replace(/\s+$/, '');
-    if (s.endsWith('>')) s = s.slice(0, -1);
-    const lines = splitLines(s).map((l) => l.trim());
-    while (lines.length && lines[0] === '') lines.shift();
-    if (command && lines.length && lines[0] === command) lines.shift();
-    return lines.filter((l) => l !== '').join('\n');
+    let s = command ? text.replace(command, '') : text;
+    s = pyStrip(s.replace(/>+$/, ''));
+    return s.replace(/\r\n|\r/g, '\n');
   }
 
   /*
@@ -255,7 +274,7 @@
     VERSION, YEAR_COMMENT, CSV_HEADER, LINE_RE,
     isValidDate, todayOf, parseLine, parseDump, splitSessions, decodeBytes,
     sessionCsv, sessionFilename, summarise, formatDuration,
-    isValidCode, folderName, stamp, localIso, portLabel, deviceInfoText,
+    isValidCode, folderName, stamp, localIso, localIsoPrecise, portLabel, deviceInfoText,
     endsWithPrompt, gdComplete, cleanResponse, parseSensorClock,
   };
 });

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- User manual (`docs/Moxy-Data-Export-User-Manual.pdf`) with screenshots and a printable checklist, built from `docs/manual.html` by `npm run manual`.
+
 ## v1.0 — 2026-10-29
 
 First release.

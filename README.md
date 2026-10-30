@@ -10,6 +10,12 @@ Nothing to install. Open the page, fill in the session details, choose a save fo
 
 After the first load the page works offline: fonts and code are all inside `index.html`.
 
+## User manual
+
+A printable manual for research assistants and students: [`docs/Moxy-Data-Export-User-Manual.pdf`](docs/Moxy-Data-Export-User-Manual.pdf) (13 pages, A4). It covers every step with screenshots, checking and storing files, erasing, every error message, and a one-page checklist to keep with the sensor.
+
+The manual's source is `docs/manual.html`. After changing it or the app, rebuild the PDF and screenshots with `npm run manual` (needs Playwright with Chromium).
+
 ## Using it
 
 1. **Session details.** Date, study code, participant code and the year of recording. Codes may contain letters, numbers and hyphens only. Use codes only: no names or hospital numbers. The folder name (`YYYY-MM-DD_STUDY_PARTICIPANT`) is shown as you type.

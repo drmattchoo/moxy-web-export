@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moxy Data Export: User Manual</title>
+<!-- Source of docs/Moxy-Data-Export-User-Manual.pdf.
+     Rebuild with:  node tools/build-manual.mjs -->
+<style>
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 400; src: url(../tools/fonts/atkinson-400.woff2) format('woff2'); }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; src: url(../tools/fonts/atkinson-700.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 400; src: url(../tools/fonts/plexmono-400.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 700; src: url(../tools/fonts/plexmono-700.woff2) format('woff2'); }
+
+@page { size: A4; margin: 18mm 18mm 20mm; }
+:root {
+  --accent: #8e1c2b; --accent-soft: #f7e8ea; --text: #1c1c1e; --muted: #55555b;
+  --border: #d6d3cd; --surface-2: #efede9; --ok: #1d6a3a; --ok-soft: #e6f2ea;
+  --warn: #7a4300; --warn-soft: #fdf1df;
+}
+* { box-sizing: border-box; }
+html { font-size: 10.5pt; }
+body { margin: 0; color: var(--text); font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.45; }
+h1, h2, h3 { line-height: 1.2; margin: 0; break-after: avoid; }
+h2 { font-size: 17pt; color: var(--accent); margin: 0 0 10pt; padding-bottom: 4pt; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 12.5pt; margin: 14pt 0 5pt; }
+p { margin: 0 0 7pt; }
+ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+li { margin-bottom: 3pt; }
+code, .mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.92em; }
+code { background: var(--surface-2); padding: 0 3pt; border-radius: 3pt; }
+a { color: var(--accent); }
+section { break-before: page; }
+.keep { break-inside: avoid; }
+
+/* Cover */
+.cover { height: 250mm; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .band { border-top: 10pt solid var(--accent); padding-top: 28mm; }
+.cover h1 { font-size: 34pt; }
+.cover .sub { font-size: 16pt; color: var(--muted); margin-top: 6pt; }
+.cover .lede { font-size: 12.5pt; max-width: 135mm; margin-top: 18mm; }
+.cover .url { margin-top: 10mm; font-size: 12pt; }
+.cover .url .mono { font-size: 12pt; font-weight: 700; color: var(--accent); }
+.cover .meta { color: var(--muted); font-size: 10pt; border-top: 1px solid var(--border); padding-top: 8pt; }
+.cover .meta td { padding: 1pt 14pt 1pt 0; border: none; }
+
+/* Contents */
+.toc > ol { list-style: none; padding: 0; font-size: 12pt; }
+.toc > ol > li { display: flex; gap: 8pt; padding: 5pt 0; border-bottom: 1px dotted var(--border); }
+.toc .n { color: var(--accent); font-weight: 700; width: 18pt; }
+
+/* Call-outs */
+.box { border-left: 4pt solid; padding: 7pt 10pt; border-radius: 3pt; margin: 8pt 0 10pt; break-inside: avoid; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.box.important { border-color: var(--accent); background: var(--accent-soft); }
+.box.tip { border-color: var(--ok); background: var(--ok-soft); }
+.box.warn { border-color: var(--warn); background: var(--warn-soft); }
+.box strong.label { display: block; margin-bottom: 2pt; }
+
+/* Steps */
+.step { display: grid; grid-template-columns: 22pt 1fr; gap: 0 9pt; margin: 0 0 12pt; break-inside: avoid; }
+.step .num {
+  width: 22pt; height: 22pt; border-radius: 50%; background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 11pt;
+}
+.step h3 { margin: 2pt 0 4pt; }
+figure { margin: 6pt 0 10pt; break-inside: avoid; }
+figure img { display: block; max-width: 100%; max-height: 88mm; width: auto; border: 1px solid var(--border); border-radius: 5pt; }
+figure.narrow img { max-width: 115mm; max-height: 80mm; }
+figure.tall img { max-height: 150mm; }
+figure.mid img { max-width: 128mm; }
+figcaption { font-size: 9pt; color: var(--muted); margin-top: 3pt; }
+
+table { border-collapse: collapse; width: 100%; margin: 4pt 0 10pt; font-size: 9.8pt; }
+th, td { border: 1px solid var(--border); padding: 5pt 7pt; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); }
+tr { break-inside: avoid; }
+td.msg { font-weight: 700; width: 46%; }
+pre { font-family: 'IBM Plex Mono', monospace; font-size: 8.3pt; background: var(--surface-2); padding: 7pt 9pt; border-radius: 4pt; white-space: pre-wrap; margin: 4pt 0 10pt; break-inside: avoid; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding: 5pt 0 5pt 22pt; position: relative; border-bottom: 1px solid var(--border); font-size: 11pt; }
+.checklist li::before { content: ''; position: absolute; left: 0; top: 6pt; width: 11pt; height: 11pt; border: 1.5px solid var(--text); border-radius: 2pt; }
+.checklist h3 { margin-top: 10pt; }
+.sign { margin-top: 14pt; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14pt; font-size: 9.5pt; color: var(--muted); }
+.sign div { border-top: 1px solid var(--text); padding-top: 3pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="band">
+    <h1>Moxy Data Export</h1>
+    <div class="sub">User manual · version 1.0</div>
+    <p class="lede">How to download the stored recordings from a USB Moxy muscle-oxygen sensor and save them as CSV files, using a web page in Google Chrome or Microsoft Edge. Written for research assistants and students. No programming or installation needed.</p>
+    <p class="url">Open the app at<br><span class="mono">https://drmattchoo.github.io/moxy-web-export/</span></p>
+  </div>
+  <div class="meta">
+    <table>
+      <tr><td>App version</td><td class="mono">moxy-web v1.0</td></tr>
+      <tr><td>Manual date</td><td>30 October 2026</td></tr>
+      <tr><td>Source and support files</td><td class="mono">github.com/drmattchoo/moxy-web-export</td></tr>
+    </table>
+  </div>
+</div>
+
+<section class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><span class="n">1</span>Before you start</li>
+    <li><span class="n">2</span>Download a sensor, step by step</li>
+    <li><span class="n">3</span>Check and store the files</li>
+    <li><span class="n">4</span>Erase the sensor</li>
+    <li><span class="n">5</span>When something goes wrong</li>
+    <li><span class="n">6</span>Advanced settings and the console log</li>
+    <li><span class="n">7</span>Practise with demo mode</li>
+    <li><span class="n">8</span>One-page checklist</li>
+  </ol>
+
+  <div class="box important" style="margin-top:18pt">
+    <strong class="label">The three rules</strong>
+    <ul>
+      <li><strong>Codes only.</strong> Never type a participant's name or hospital number anywhere in the app.</li>
+      <li><strong>Check before you erase.</strong> Compare the saved sessions with the paper session log first. Erasing cannot be undone.</li>
+      <li><strong>Keep the raw file.</strong> Every download saves an exact copy of what the sensor sent. Never edit or delete it.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>1. Before you start</h2>
+
+  <h3>What you need</h3>
+  <ul>
+    <li>A <strong>Mac or Windows computer</strong> with <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>. Safari and Firefox do not work. Tablets and phones do not work.</li>
+    <li>The <strong>Moxy sensor</strong>, charged.</li>
+    <li>A <strong>USB data cable</strong>. Some cables only charge and carry no data; if the sensor never answers, try another cable.</li>
+    <li>The <strong>study code</strong> and <strong>participant code</strong> for the recording.</li>
+    <li>The <strong>paper session log</strong> for the recording, to check the results against.</li>
+  </ul>
+
+  <h3>Close other programs that use the sensor</h3>
+  <p>Only one program can talk to the sensor at a time. Close <strong>GoldenCheetah</strong>, the old Terminal script, and any virtual machine (for example Parallels or VirtualBox) before you start.</p>
+
+  <h3>Codes, not names</h3>
+  <p>Study and participant codes may contain only letters, numbers and hyphens, for example <code>VO2-A</code> and <code>P007</code>. The app will not accept spaces or other characters. This keeps names out of folder names and files.</p>
+
+  <h3>How dates work on the sensor</h3>
+  <p>The sensor stores the <strong>month and day</strong> of each reading but <strong>not the year</strong>. The app adds the year you enter as <em>Year of recording</em>. If that gives a date later than today, the app uses the year before, so a December recording downloaded in January gets the right year.</p>
+  <p>The times in the files come from the <strong>sensor's own clock</strong>. The app shows that clock next to the computer's clock when you connect, so you can spot a sensor whose clock is wrong.</p>
+
+  <div class="box tip">
+    <strong class="label">First time on a new computer?</strong>
+    <p>Practise once in demo mode (section 7). It uses a simulated sensor, so nothing can go wrong.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. Download a sensor, step by step</h2>
+  <p>Open <span class="mono">https://drmattchoo.github.io/moxy-web-export/</span> in Chrome or Edge. The page has five numbered steps, top to bottom. Each step is greyed out until the one before it is done.</p>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h3>Session details</h3>
+      <p>Enter the <strong>session date</strong>, <strong>study code</strong>, <strong>participant code</strong> and <strong>year of recording</strong> (normally this year). The folder name appears underneath as you type. Check it is right.</p>
+      <figure><img src="img/01-details.png" alt="Session details form with folder name shown"><figcaption>The folder name is the date, study code and participant code joined with underscores.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h3>Save folder</h3>
+      <p>The first time, click <strong>Choose save folder</strong> and pick the folder where exports should go (for example a <em>Moxy exports</em> folder on the desktop). The browser asks whether the page may save files there: click <strong>Allow</strong> or <strong>Save changes</strong>.</p>
+      <p>On later visits the page remembers the folder. If it shows <strong>Allow access</strong>, click it and allow again. To use a different folder, click <strong>Change</strong>.</p>
+      <figure class="narrow"><img src="img/02-folder.png" alt="Save folder step showing the remembered folder and a Change link"><figcaption>After choosing: the page shows the folder name and a Change link.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h3>Connect sensor</h3>
+      <ol>
+        <li>Plug the Moxy into the computer with the data cable.</li>
+        <li>Click <strong>Connect sensor</strong>. The browser opens a list of devices.</li>
+        <li>Choose the Moxy (its name often contains <em>usbmodem</em>, <em>USB Serial</em> or <em>COM</em>) and click <strong>Connect</strong>.</li>
+      </ol>
+      <p>After a few seconds the page shows the sensor's firmware, clock, battery and update mode.</p>
+      <figure><img src="img/03-connect.png" alt="Connected sensor details with clock difference highlighted in red"><figcaption>Example. The sensor clock here is 3.2 minutes slow, so the difference is shown in red.</figcaption></figure>
+      <div class="box warn">
+        <strong class="label">Clock difference in red?</strong>
+        <p>If the sensor clock and the computer clock differ by more than 2 minutes, the line turns red. The session times in the files will be off by that amount. Write the difference on the paper session log, and tell whoever looks after the sensors so the clock can be reset.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div>
+      <h3>Download</h3>
+      <p>Click <strong>Download data</strong>. A counter shows how many bytes have arrived. A full sensor can take a minute or two. Do not unplug the sensor or close the page while it runs.</p>
+      <p>When it finishes, a table lists every recording session found, with its start and end time, duration, number of rows and the first and last SmO<sub>2</sub> values. The files are then saved automatically, and the sensor is released.</p>
+      <figure class="mid"><img src="img/04-download.png" alt="Download step with a table of four sessions"><figcaption>Each row is one recording session. A pause of more than 30 minutes starts a new session.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <div>
+      <h3>Result</h3>
+      <p>A green message says how many sessions were saved and where, followed by the list of files.</p>
+      <figure class="mid"><img src="img/05-result.png" alt="Green result message listing the saved files"><figcaption>The files are in a new folder inside your save folder.</figcaption></figure>
+      <p>Now go to section 3 and check the files. To download the next participant, change the participant code in step 1 and connect again.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>3. Check and store the files</h2>
+
+  <h3>What is in the folder</h3>
+  <p>Each download creates a new folder named <code>YYYY-MM-DD_STUDY_PARTICIPANT</code>. The app never overwrites an existing folder or file.</p>
+  <table>
+    <tr><th style="width:42%">File</th><th>What it is</th></tr>
+    <tr><td class="mono">raw_gd_20261029_120001.txt</td><td>The exact data the sensor sent, untouched. Keep it: it is the original record.</td></tr>
+    <tr><td class="mono">device_info_20261029_120001.txt</td><td>Sensor firmware, clock, battery, update mode, app version and download time.</td></tr>
+    <tr><td class="mono">session_2026-10-27_090501.csv</td><td>One file per recording session, named by its start date and time. Opens in Excel, R, SPSS or Python.</td></tr>
+  </table>
+  <p>The number in the <code>raw_gd</code> and <code>device_info</code> names is the date and time of the download.</p>
+
+  <h3>Inside a session file</h3>
+  <pre># Moxy Monitor FW 2.1.7 | SN 01234 HW rev C | moxy-web v1.0
+# year assumed from --year / today's date; device log stores mm-dd only
+date,time,smo2_live,smo2_avg,thb,lap,extra
+2026-10-27,09:05:01,55,52,12.40,0,
+2026-10-27,09:05:03,56,53,12.39,0,</pre>
+  <p>The two lines starting with <code>#</code> are notes, not data. When importing into Excel or a statistics program, skip the first 2 lines; the third line is the column header. Columns: SmO<sub>2</sub> live and averaged (%), total haemoglobin (THb, g/dl), lap marker, and an extra column that is usually empty.</p>
+
+  <h3>Check against the paper session log</h3>
+  <div class="box important">
+    <p>For <strong>every session</strong> in the table, check that the <strong>start time</strong> and <strong>duration</strong> match what was written on the paper session log (allowing for any clock difference you noted). Sessions from other participants or earlier tests may also be on the sensor; note which session belongs to this participant.</p>
+  </div>
+  <p>If a session is missing, or the times do not match, <strong>do not erase the sensor</strong>. Keep the folder and contact the maintainer (section 5).</p>
+
+  <h3>Copy to study storage</h3>
+  <p>Copy the whole folder, unchanged, to the study's secure storage location as set out in your study protocol. Do not rename files inside it or edit the CSV files; work on copies instead.</p>
+</section>
+
+<section>
+  <h2>4. Erase the sensor</h2>
+  <p>Erasing deletes <strong>all</strong> recordings on the sensor, for every participant. It cannot be undone. Only erase when your study protocol says so, and only after:</p>
+  <ul>
+    <li>this page has saved the download (green message in step 5),</li>
+    <li>you have checked every session against the paper session log, and</li>
+    <li>ideally, the folder has been copied to study storage.</li>
+  </ul>
+
+  <h3>How to erase</h3>
+  <ol>
+    <li>Plug the same sensor back in if you unplugged it.</li>
+    <li>Click <strong>Erase sensor</strong> near the bottom of the page to open the panel.</li>
+    <li>Type the word <code>erase</code> in the box. The <strong>Erase sensor</strong> button becomes active.</li>
+    <li>Click <strong>Erase sensor</strong>. If the browser asks, choose the Moxy again. Wait for the green message (about 5 seconds).</li>
+  </ol>
+  <figure><img src="img/06-erase.png" alt="Erase sensor panel with the word erase typed and the button active"><figcaption>The button stays grey until the word <em>erase</em> is typed.</figcaption></figure>
+
+  <h3>Safety locks</h3>
+  <p>The erase button stays locked when:</p>
+  <ul>
+    <li>no download has been saved since the page was opened (reloading the page locks it again);</li>
+    <li>the download found no complete recordings;</li>
+    <li>the download stopped before the sensor said it had finished;</li>
+    <li>it has already been used once for this download.</li>
+  </ul>
+  <p>Before erasing, the app also checks that the sensor plugged in is the one that was just downloaded. If not, it stops with “This is not the sensor that was just downloaded. Nothing was erased.”</p>
+</section>
+
+<section>
+  <h2>5. When something goes wrong</h2>
+  <p>Messages appear in a coloured box under the step where the problem happened.</p>
+  <figure class="narrow"><img src="img/07-error.png" alt="Connect step showing the sensor did not answer message"><figcaption>An error message under step 3.</figcaption></figure>
+  <div class="box tip">
+    <strong class="label">Contacting the maintainer</strong>
+    <p>Send: the export folder (if one was made), the saved console log (section 6), the computer type (Mac or Windows) and browser, and the exact message on screen.</p>
+  </div>
+  <table>
+    <thead><tr><th>Message</th><th>What to do</th></tr></thead>
+    <tr><td class="msg">Open this page in Google Chrome or Microsoft Edge on a computer.</td><td>You are in Safari, Firefox, or on a tablet or phone. Copy the address into Chrome or Edge on a Mac or Windows computer.</td></tr>
+    <tr><td class="msg">No sensor selected. Click Connect sensor and choose the Moxy.</td><td>The device list was closed without choosing. Click Connect sensor again. If the Moxy is not in the list, check the cable is plugged in and is a data cable.</td></tr>
+    <tr><td class="msg">The sensor is in use by another program. Close GoldenCheetah or any virtual machine, then try again.</td><td>Close GoldenCheetah, the Terminal script, other browser tabs with this page, and virtual machines. Then click Connect sensor again.</td></tr>
+    <tr><td class="msg">The sensor did not answer. Unplug it, press its button once, plug it back in and try again. Use a data cable, not a charge-only cable.</td><td>Do exactly that. If it happens again, try another USB cable and another USB port.</td></tr>
+    <tr><td class="msg">The sensor was unplugged. Plug it back in and click Connect sensor.</td><td>The cable came loose. If it happened during a download, whatever arrived was saved with a warning: do not erase. Reconnect and download again, adding <code>-R2</code> to the participant code.</td></tr>
+    <tr><td class="msg">No complete recordings were found. The raw file was saved; send it to the maintainer. Do not erase the sensor.</td><td>The sensor sent data but no session was long enough. Send the folder and the console log (section 6) to the maintainer. Do not erase.</td></tr>
+    <tr><td class="msg">The download stopped before the sensor said it had finished.</td><td>The files were saved but may be incomplete. Do not erase. Connect and download again under a different participant code or date, for example add <code>-R2</code> to the participant code.</td></tr>
+    <tr><td class="msg">A folder with this name already exists. Change the participant code or date.</td><td>This participant was already downloaded today. Check the existing folder. If you need a second download, change the participant code (for example <code>P007-R2</code>), then click <strong>Save files again</strong> or download again.</td></tr>
+    <tr><td class="msg">Allow access to the save folder again.</td><td>The browser forgot its permission. Click <strong>Allow access</strong> in step 2 (or <strong>Save files again</strong> in step 5) and allow. Your downloaded data is kept in the page until you close it.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>6. Advanced settings and the console log</h2>
+  <p>Click <strong>Advanced</strong> at the bottom of the page. Change these settings only if the study protocol or the maintainer tells you to.</p>
+  <table>
+    <tr><th style="width:36%">Setting</th><th>Meaning</th></tr>
+    <tr><td><strong>Gap between sessions</strong> (default 30 minutes)</td><td>A pause in the data longer than this starts a new session file.</td></tr>
+    <tr><td><strong>Minimum rows per session</strong> (default 30)</td><td>Sessions with fewer rows are treated as accidental and left out of the CSV files. They are still in the raw file.</td></tr>
+  </table>
+  <p>Change settings <strong>before</strong> clicking Download data.</p>
+
+  <h3>Console log</h3>
+  <p>The console log lists every command sent to the sensor and every reply, with the time. If something goes wrong, click <strong>Save console log</strong>: the browser saves a file named <code>console_YYYYMMDD_HHMMSS.txt</code> to your Downloads folder. Send it to the maintainer.</p>
+  <figure class="tall"><img src="img/08-advanced.png" alt="Advanced panel with gap and minimum rows settings and the console log"><figcaption>The Advanced panel.</figcaption></figure>
+</section>
+
+<section>
+  <h2>7. Practise with demo mode</h2>
+  <p>Demo mode replaces the sensor with a simulated one, so you can try every step without a Moxy. Open:</p>
+  <p class="mono" style="font-size:11.5pt;font-weight:700;color:var(--accent)">https://drmattchoo.github.io/moxy-web-export/?demo=1</p>
+  <p>An orange banner reads <strong>Demo mode: simulated sensor</strong>. Everything else works as normal: the simulated sensor has four sessions and a clock that is 3 minutes slow.</p>
+  <div class="box warn">
+    <p>Demo mode writes real files. Choose a scratch folder (for example <em>Demo test</em> on the desktop), not the study export folder, and delete the demo files afterwards.</p>
+  </div>
+
+  <h3>Why the page works offline</h3>
+  <p>The whole app is a single web page. Once it has loaded, it no longer needs the internet; the sensor data never leaves the computer. Nothing is uploaded anywhere.</p>
+</section>
+
+<section>
+  <h2>8. One-page checklist</h2>
+  <p>Print this page and keep it with the sensor.</p>
+  <ul class="checklist">
+    <h3>Before</h3>
+    <li>GoldenCheetah, the Terminal script and virtual machines are closed</li>
+    <li>Page open in Chrome or Edge: <span class="mono">drmattchoo.github.io/moxy-web-export</span></li>
+    <li>Paper session log at hand</li>
+    <h3>Download</h3>
+    <li>1 · Date, study code, participant code, year entered. Codes only, no names</li>
+    <li>2 · Save folder shown (click Allow access if asked)</li>
+    <li>3 · Sensor connected. Clock difference noted on paper log if red</li>
+    <li>4 · Download data. Session table appears</li>
+    <li>5 · Green “Saved N sessions” message</li>
+    <h3>Check and store</h3>
+    <li>Every session's start time and duration matches the paper session log</li>
+    <li>Folder copied unchanged to study storage</li>
+    <h3>Erase (only if the protocol says so)</h3>
+    <li>All checks above done</li>
+    <li>Typed <code>erase</code>, clicked Erase sensor, green message shown</li>
+  </ul>
+  <div class="sign"><div>Participant code</div><div>Initials</div><div>Date</div></div>
+</section>
+
+</body>
+</html>
